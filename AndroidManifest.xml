@@ -3,7 +3,7 @@
 	package="com.unicorntoast.android.zoodroid" android:versionCode="1"
 	android:versionName="1.0">
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
-		<activity android:name=".ZoodroidActivity" android:label="@string/app_name">
+		<activity android:name=".ZoodroidActivity" android:label="@string/app_name" android:theme="@android:style/Theme.NoTitleBar">>
 
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />

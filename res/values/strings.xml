@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, ZoodroidActivity!</string>
+    <string name="title_signin">Sign in</string>
+    <string name="button_signin">Sign in</string>
     <string name="app_name">Zoodroid</string>
+    <string name="label_username">Username</string>
+    <string name="label_password">Password</string>
+    <string name="hint_username">Your username</string>
+    <string name="hint_password">Your password</string>
 </resources>

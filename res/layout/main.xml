@@ -1,12 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    >
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="@string/hello"
-    />
-</LinearLayout>
+	android:background="@color/app_background"
+	>
+
+
+	<RelativeLayout 
+		android:layout_width="fill_parent"
+    	android:layout_height="32px"
+    	android:layout_alignParentTop="true"
+		android:background="@drawable/pattern_tiled"
+		>
+		<ImageView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/logo"
+			android:layout_centerVertical="true"
+			android:paddingLeft="15dip"
+			/>
+			
+	</RelativeLayout>
+	
+	<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:id="@+id/login_table"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:stretchColumns="1"
+	    android:background="@layout/login_rectangle"
+	    android:layout_marginLeft="15dip"
+	    android:layout_marginRight="15dip"
+	    android:layout_marginTop="100dip"
+	    android:paddingTop="20dip"
+	    android:paddingBottom="20dip"
+	    android:paddingLeft="20dip"
+	    android:paddingRight="20dip"
+	    >
+	    <TableRow>
+	<TextView
+		android:text="@string/label_username"
+		style="@style/LoginTextLabel"
+		android:gravity="right"
+		android:paddingRight="10dip"
+		/>
+	<EditText
+		android:id="@+id/input_username"
+		style="@style/LoginTextInput"
+		android:hint="@string/hint_username"
+		android:inputType="textEmailAddress"
+		/>
+		</TableRow>
+		<TableRow>
+	<TextView
+		style="@style/LoginTextLabel"
+		android:text="@string/label_password"
+		android:gravity="right"
+		android:paddingRight="10dip"
+		/>
+	<EditText
+		android:id="@+id/input_password"
+		android:hint="@string/hint_password"
+		style="@style/LoginTextInput"
+		android:password="true"
+		/>
+		</TableRow>
+		<RelativeLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"	
+			>
+			<Button 
+				android:id="@+id/signin_button"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/button_signin" 
+				android:layout_alignParentRight="true" />
+		</RelativeLayout>
+	</TableLayout>
+	
+	<TextView
+		style="@style/HeaderTitle"
+		android:text="@string/title_signin"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_above="@id/login_table"
+		/>
+		
+	<LinearLayout 
+		android:layout_width="fill_parent"
+    	android:layout_height="32px"
+    	android:layout_alignParentBottom="true"
+		android:background="@drawable/grass_tiled"
+		android:padding="0dip"
+		android:layout_margin="0dip"
+		/>
+</RelativeLayout>
