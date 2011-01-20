@@ -10,4 +10,8 @@
     
     <string name="title_exception_dialog">Oh my, an error occured!</string>
     <string name="exception_sha1">Couldn\'t load SHA-1 digest</string>
+    <string name="exception_protocol">Protocol error</string>
+    <string name="exception_connection">Couldn\'t connect to zootool.com</string>
+    <string name="exception_response">Couldn\'t read response</string>
+    <string name="exception_not_authorized">Invalid username and/or password</string>
 </resources>

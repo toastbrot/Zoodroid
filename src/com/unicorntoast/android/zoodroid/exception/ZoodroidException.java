@@ -5,10 +5,16 @@ public class ZoodroidException extends RuntimeException {
 	
 	private int msgResourceId;
 	private Exception originalException;
+	private String more;
 	
-	public ZoodroidException(int msgResourceId, Exception originalException) {
+	public ZoodroidException(int msgResourceId, Exception originalException, String more) {
 		this.msgResourceId = msgResourceId;
 		this.originalException = originalException;
+		this.more = more;
+	}
+	
+	public ZoodroidException(int msgResourceId, Exception originalException) {
+		this(msgResourceId, originalException, null);
 	}
 
 	public int getMsgResourceId() {
@@ -17,6 +23,10 @@ public class ZoodroidException extends RuntimeException {
 
 	public Exception getOriginalException() {
 		return originalException;
+	}
+
+	public String getMore() {
+		return more;
 	}
 	
 }

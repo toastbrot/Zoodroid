@@ -13,13 +13,15 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.unicorntoast.android.zoodroid.api.ZooToolApi;
+import com.unicorntoast.android.zoodroid.data.UserPreferences;
 import com.unicorntoast.android.zoodroid.exception.ZoodroidException;
 import com.unicorntoast.android.zoodroid.ui.dialog.ErrorDialog;
 
 public class ZoodroidActivity extends Activity {
     
-	private ZooToolApi api;
 	
+	private ZooToolApi api;
+	private UserPreferences preferences;
 	private EditText inputUsername;
 	private EditText inputPassword;
 	
@@ -36,13 +38,21 @@ public class ZoodroidActivity extends Activity {
 				runOnUiThread(new Runnable() {
 					public void run() {
 						String msg = null;
-						
+						String more = null;
 						if(ex instanceof ZoodroidException) {
-							msg = ZoodroidActivity.this.getString(((ZoodroidException) ex).getMsgResourceId());
+							ZoodroidException zde = ZoodroidException.class.cast(ex.getCause());
+							msg = ZoodroidActivity.this.getString(zde.getMsgResourceId());
+							more = zde.getMore();
 						} else if(ex.getCause() instanceof ZoodroidException) {
-							msg = ZoodroidActivity.this.getString(((ZoodroidException) ex.getCause()).getMsgResourceId()); 
+							ZoodroidException zde = ZoodroidException.class.cast(ex.getCause());
+							msg = ZoodroidActivity.this.getString(zde.getMsgResourceId()); 
+							more = zde.getMore();
 						} else {
 							msg = ex.getLocalizedMessage();
+						}
+						
+						if(more!=null) {
+							msg += ": "+more;
 						}
 						
 						ErrorDialog.show(ZoodroidActivity.this, msg);
@@ -61,10 +71,12 @@ public class ZoodroidActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
+ 
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
+ 
+        preferences = new UserPreferences(this);
         
-        
+     
         inputUsername = EditText.class.cast(findViewById(R.id.input_username));
         inputPassword = EditText.class.cast(findViewById(R.id.input_password));
         Button signInButton = Button.class.cast(findViewById(R.id.signin_button));

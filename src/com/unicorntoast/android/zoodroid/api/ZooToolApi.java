@@ -1,6 +1,7 @@
 package com.unicorntoast.android.zoodroid.api;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -10,6 +11,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -54,6 +56,80 @@ public class ZooToolApi {
 		new LoginTask().execute(this.username, this.password);
 	}
 	
+	public void tryLogin() {
+		
+	}
+	
+	private void callHttp(String url) {
+		
+	}
+	
+	private class HttpCallResult {
+		public int statusCode;
+		public String body;
+		
+		public HttpCallResult(int statusCode, String body) {
+			this.statusCode = statusCode;
+			this.body = body;
+		}
+	}
+	
+	private class HttpCallTask extends AsyncTask<String, Void, HttpCallResult> {
+		private boolean throwNotAuthorized;
+		
+		public HttpCallTask() {
+			this(true);
+		}
+		
+		public HttpCallTask(boolean throwNotAuthorized) {
+			this.throwNotAuthorized = throwNotAuthorized;
+		}
+		@Override
+		protected HttpCallResult doInBackground(String... params) {
+			HttpGet request = new HttpGet(params[0]);
+			
+			HttpResponse response;
+			
+			int statusCode = -1;
+			try {
+				response = httpClient.execute(request);
+				
+				statusCode = response.getStatusLine().getStatusCode();
+				if(statusCode==401 && throwNotAuthorized) {
+					throw new ZoodroidException(R.string.exception_not_authorized, null);
+				} else if(statusCode!=200) {
+					throw new ZoodroidException(R.string.exception_not_authorized, null, "HTTP Status: "+statusCode);
+				}
+			} catch (ClientProtocolException e) {
+				throw new ZoodroidException(R.string.exception_protocol, e);
+			} catch (IOException e) {
+				throw new ZoodroidException(R.string.exception_connection, e);
+			}
+			
+			HttpEntity entity = response.getEntity();
+
+			if (entity != null) {
+				try {
+					BufferedReader r = new BufferedReader(new InputStreamReader(entity.getContent()));
+					StringBuffer buffer = new StringBuffer();
+		
+					String line = r.readLine();
+					while (line != null) {
+						line = r.readLine();
+						buffer.append(line).append("\n");
+					}
+					entity.consumeContent();
+					return new HttpCallResult(statusCode, buffer.toString());
+				} catch(IOException e) {
+					throw new ZoodroidException(R.string.exception_response, e);
+				}
+			}
+	
+			return null;
+		}
+		
+	}
+	
 	private class LoginTask extends AsyncTask<String, Integer, String> {
 		private ProgressDialog progressDialog;
 		
@@ -67,8 +143,8 @@ public class ZooToolApi {
 		protected String doInBackground(String... params) {
 			
 			try {
-				MessageDigest sha = MessageDigest.getInstance("SHA-12");
-				ZooToolApi.this.userPwd = username+":"+EncodingUtil.byteArrayToHex(sha.digest(params[1].getBytes()));
+				MessageDigest sha = MessageDigest.getInstance("SHA-1");
+				ZooToolApi.this.userPwd = params[0]+":"+EncodingUtil.byteArrayToHex(sha.digest(params[1].getBytes()));
 			} catch (NoSuchAlgorithmException e) {
 				progressDialog.cancel();
 				throw new ZoodroidException(R.string.exception_sha1,e);
@@ -82,41 +158,50 @@ public class ZooToolApi {
 			
 			HttpGet request = new HttpGet(String.format(VALIDATE_CALL, params[0], API_KEY));
 			
+			
+			HttpResponse response;
+			
 			try {
-				System.out.println("executing request" + request.getRequestLine());
-				HttpResponse response = httpClient.execute(request);
-				HttpEntity entity = response.getEntity();
+				response = httpClient.execute(request);
 				
-		        System.out.println("----------------------------------------");
-		        System.out.println(response.getStatusLine());
-		        if (entity != null) {
-		            System.out.println("Response content length: " + entity.getContentLength());
-		        
-		            BufferedReader r = new BufferedReader(new InputStreamReader(entity.getContent()));
-		            StringBuffer buffer = new StringBuffer();
-		            
-		            String line = r.readLine();
-		            while(line!=null) {
-		            	line = r.readLine();
-		            	buffer.append(line).append("\n");
-		            }
-		            entity.consumeContent();
-		            return buffer.toString();
-		        }
-			} catch(Exception e) {
-				throw new RuntimeException(e);
+				int statusCode = response.getStatusLine().getStatusCode();
+				if(statusCode==408) {
+					throw new ZoodroidException(R.string.exception_not_authorized, null);
+				} else if(statusCode!=200) {
+					throw new ZoodroidException(R.string.exception_not_authorized, null, "HTTP Status: "+statusCode);
+				}
+			} catch (ClientProtocolException e) {
+				throw new ZoodroidException(R.string.exception_protocol, e);
+			} catch (IOException e) {
+				throw new ZoodroidException(R.string.exception_connection, e);
 			}
 			
+			HttpEntity entity = response.getEntity();
+
+			if (entity != null) {
+				try {
+					BufferedReader r = new BufferedReader(new InputStreamReader(entity.getContent()));
+					StringBuffer buffer = new StringBuffer();
+		
+					String line = r.readLine();
+					while (line != null) {
+						line = r.readLine();
+						buffer.append(line).append("\n");
+					}
+					entity.consumeContent();
+					return buffer.toString();
+				} catch(IOException e) {
+					throw new ZoodroidException(R.string.exception_response, e);
+				}
+			}
+	
 			return null;
 		}
 		
 		@Override
-		protected void onCancelled() {
-			super.onCancelled();
-		}
-		@Override
 		protected void onPostExecute(String result) {
 			progressDialog.cancel();
+			System.out.println(result);
 		}
 	}
 	
