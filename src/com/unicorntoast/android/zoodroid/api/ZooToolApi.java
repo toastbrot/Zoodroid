@@ -18,7 +18,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.unicorntoast.android.zoodroid.ui.dialog.ErrorDialog;
+import com.unicorntoast.android.zoodroid.R;
+import com.unicorntoast.android.zoodroid.exception.ZoodroidException;
 import com.unicorntoast.android.zoodroid.utils.EncodingUtil;
 
 /*
@@ -34,7 +35,6 @@ public class ZooToolApi {
 	private String username;
 	private String password;
 	private String userPwd;
-
 
 	private DefaultHttpClient httpClient = new DefaultHttpClient();
 	private Credentials credentials = null;
@@ -56,11 +56,11 @@ public class ZooToolApi {
 	
 	private class LoginTask extends AsyncTask<String, Integer, String> {
 		private ProgressDialog progressDialog;
-
+		
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			progressDialog = ProgressDialog.show(ZooToolApi.this.ctx, "Logging you in", "Just a matter of seconds ;)");
+			this.progressDialog = ProgressDialog.show(ZooToolApi.this.ctx, "Logging you in", "Just a matter of seconds ;)");
 		}
 
 		@Override
@@ -70,7 +70,8 @@ public class ZooToolApi {
 				MessageDigest sha = MessageDigest.getInstance("SHA-12");
 				ZooToolApi.this.userPwd = username+":"+EncodingUtil.byteArrayToHex(sha.digest(params[1].getBytes()));
 			} catch (NoSuchAlgorithmException e) {
-				throw new RuntimeException(e);
+				progressDialog.cancel();
+				throw new ZoodroidException(R.string.exception_sha1,e);
 			}
 
 			credentials = new UsernamePasswordCredentials(userPwd);
@@ -110,9 +111,12 @@ public class ZooToolApi {
 		}
 		
 		@Override
+		protected void onCancelled() {
+			super.onCancelled();
+		}
+		@Override
 		protected void onPostExecute(String result) {
-			super.onPostExecute(result);
-			progressDialog.hide();
+			progressDialog.cancel();
 		}
 	}
 	

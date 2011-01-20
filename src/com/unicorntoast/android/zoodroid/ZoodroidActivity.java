@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.unicorntoast.android.zoodroid.api.ZooToolApi;
+import com.unicorntoast.android.zoodroid.exception.ZoodroidException;
 import com.unicorntoast.android.zoodroid.ui.dialog.ErrorDialog;
 
 public class ZoodroidActivity extends Activity {
@@ -22,16 +23,46 @@ public class ZoodroidActivity extends Activity {
 	private EditText inputUsername;
 	private EditText inputPassword;
 	
+	private class ExceptionHandler implements UncaughtExceptionHandler {
+
+		private UncaughtExceptionHandler oldDefaultUncaughtExceptionHandler;
+		
+		public ExceptionHandler() {
+			oldDefaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+		}
+		
+		public void uncaughtException(Thread thread, final Throwable ex) {
+			try {
+				runOnUiThread(new Runnable() {
+					public void run() {
+						String msg = null;
+						
+						if(ex instanceof ZoodroidException) {
+							msg = ZoodroidActivity.this.getString(((ZoodroidException) ex).getMsgResourceId());
+						} else if(ex.getCause() instanceof ZoodroidException) {
+							msg = ZoodroidActivity.this.getString(((ZoodroidException) ex.getCause()).getMsgResourceId()); 
+						} else {
+							msg = ex.getLocalizedMessage();
+						}
+						
+						ErrorDialog.show(ZoodroidActivity.this, msg);
+					}
+				});
+				
+			} catch(Exception e) {
+				Thread.setDefaultUncaughtExceptionHandler(oldDefaultUncaughtExceptionHandler);
+				oldDefaultUncaughtExceptionHandler.uncaughtException(thread, ex);
+			}
+		}
+		
+	}
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-			public void uncaughtException(Thread thread, Throwable ex) {
-				ErrorDialog.show(ZoodroidActivity.this, "Oh, an error occured:", ex.getLocalizedMessage());
-			}
-		});
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
         
         
         inputUsername = EditText.class.cast(findViewById(R.id.input_username));
